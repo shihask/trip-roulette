@@ -27,7 +27,7 @@ npx supabase gen types typescript --remote --schema public > src/lib/database.ty
 npx supabase functions deploy create-trip --use-api   # deploy an Edge Function (no Docker needed; 9 functions in supabase/functions/)
 npm test                                   # engine, spin and itinerary unit tests (Vitest)
 npm run build && npm run test:e2e          # Playwright + axe against the production build (creates 2 test guests + 2 trips per run)
-E2E_BASE_URL=https://trip-roulette-ten.vercel.app npx playwright test   # same tests against the live site
+E2E_BASE_URL=https://trip.moneyplant.online npx playwright test   # same tests against the live site
 ```
 
 ## Admin access
@@ -72,7 +72,7 @@ E2E_BASE_URL=https://trip-roulette-ten.vercel.app npx playwright test   # same t
 - Admin account: see *Admin access* above.
 - Routing provider (ARCHITECTURE §17): routes are straight-line estimates until one is chosen; plug it into `refresh-routes`.
 - Legal review of privacy and terms; a contact address (`NEXT_PUBLIC_CONTACT_EMAIL`).
-- Hosting: live at https://trip-roulette-ten.vercel.app (Vercel, deploys on push to `main`). Env vars there: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_CONTACT_EMAIL` and `REVALIDATE_SECRET` there, and the `SITE_URL` and `ALLOWED_ORIGINS` function secrets in Supabase (`npx supabase secrets set "ALLOWED_ORIGINS=https://<your-domain>,http://localhost:3000,http://localhost:3100"`; keep the localhost entries for development and tests).
+- Hosting: live at https://trip.moneyplant.online (Vercel, deploys on push to `main`; also https://trip-roulette-ten.vercel.app; DNS: CNAME `trip` on Cloudflare, DNS only). Env vars there: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_CONTACT_EMAIL` and `REVALIDATE_SECRET` there, and the `SITE_URL` and `ALLOWED_ORIGINS` function secrets in Supabase (`npx supabase secrets set "ALLOWED_ORIGINS=https://<your-domain>,http://localhost:3000,http://localhost:3100"`; keep the localhost entries for development and tests).
 - All destination data is **sample data**; replace it with verified records through the admin before launch.
 
 
