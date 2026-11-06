@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { buttonVariants } from "@/components/button-link";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { useTurnstile } from "@/lib/turnstile";
 
 export const inputClass =
   "h-11 w-full rounded-xl border-[1.5px] border-line-input bg-surface px-3 text-[15px] aria-[invalid=true]:border-error-inline";
@@ -29,6 +30,7 @@ export function AdminLoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const { containerRef: captchaRef, enabled: captchaEnabled, getToken: getCaptchaToken } = useTurnstile("admin_login");
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -38,7 +40,21 @@ export function AdminLoginForm() {
       return;
     }
     setBusy(true);
-    const { error: signInError } = await getSupabaseBrowserClient().auth.signInWithPassword({ email: email.trim(), password });
+    let captchaToken: string | undefined;
+    if (captchaEnabled) {
+      const token = await getCaptchaToken();
+      if (!token) {
+        setBusy(false);
+        setError("The security check didn't complete. If a check box appeared, tick it, then sign in again.");
+        return;
+      }
+      captchaToken = token;
+    }
+    const { error: signInError } = await getSupabaseBrowserClient().auth.signInWithPassword({
+      email: email.trim(),
+      password,
+      options: captchaToken ? { captchaToken } : undefined,
+    });
     setBusy(false);
     if (signInError) {
       setError(signInError.message === "Invalid login credentials" ? "That email and password don't match an account." : signInError.message);
@@ -71,6 +87,7 @@ export function AdminLoginForm() {
           className={inputClass}
         />
       </div>
+      {captchaEnabled ? <div ref={captchaRef} className="flex justify-center" /> : null}
       {error ? (
         <p role="alert" className="text-[15px] font-medium text-error-inline">
           {error}

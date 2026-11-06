@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
-import { expectAccessible, expectNoHorizontalScroll, visibleH1 } from "./helpers";
+import { captchaBrowser, expectAccessible, expectNoHorizontalScroll, visibleH1 } from "./helpers";
+
+test.use(captchaBrowser);
 
 /**
  * The usability tasks (BUILD_BRIEF §10, TEST_PLAN §12), as one journey on a real trip:

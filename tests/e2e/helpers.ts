@@ -23,3 +23,41 @@ export const supabase = {
   url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
   key: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
 };
+
+/**
+ * Body field Supabase Auth expects when CAPTCHA is on: a fresh Turnstile token, obtained by
+ * rendering a widget on one of the site's own pages (Turnstile only works on its allowed hostnames).
+ * Empty object when NEXT_PUBLIC_TURNSTILE_SITE_KEY isn't set (CAPTCHA off).
+ */
+export async function captchaFields(page: Page): Promise<Record<string, unknown>> {
+  const sitekey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  if (!sitekey) return {};
+  await page.goto("/offline");
+  const token = await page.evaluate(
+    (key) =>
+      new Promise<string>((resolve, reject) => {
+        const w = window as unknown as { turnstile?: { render(el: HTMLElement, o: object): string } };
+        const render = () => {
+          const el = document.createElement("div");
+          document.body.appendChild(el);
+          w.turnstile!.render(el, { sitekey: key, callback: resolve, "error-callback": () => reject(new Error("Turnstile error")) });
+        };
+        if (w.turnstile) return render();
+        const s = document.createElement("script");
+        s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+        s.onload = render;
+        s.onerror = () => reject(new Error("Turnstile script failed"));
+        document.head.appendChild(s);
+      }),
+    sitekey,
+  );
+  return { gotrue_meta_security: { captcha_token: token } };
+}
+
+/**
+ * Turnstile refuses headless browsers (error 600010), so tests that sign in run in a visible
+ * Chrome window when the site key is set. Use with `test.use(captchaBrowser)`.
+ */
+export const captchaBrowser = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  ? { headless: false, launchOptions: { args: ["--disable-blink-features=AutomationControlled"] } }
+  : {};

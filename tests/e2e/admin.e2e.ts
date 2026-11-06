@@ -1,5 +1,7 @@
-import { expect, test, type APIRequestContext } from "@playwright/test";
-import { expectAccessible, supabase, visibleH1 } from "./helpers";
+import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
+import { captchaBrowser, captchaFields, expectAccessible, supabase, visibleH1 } from "./helpers";
+
+test.use(captchaBrowser);
 
 /**
  * Admin, signed in (BUILD_BRIEF §10 step 9). Needs E2E_ADMIN_EMAIL and E2E_ADMIN_PASSWORD in
@@ -12,11 +14,10 @@ const password = process.env.E2E_ADMIN_PASSWORD;
 
 test.use({ viewport: { width: 1280, height: 900 }, hasTouch: false });
 
-async function deleteDestination(request: APIRequestContext, id: string) {
+async function deleteDestination(page: Page, request: APIRequestContext, id: string) {
   const headers = { apikey: supabase.key, "Content-Type": "application/json" };
-  const session = await (
-    await request.post(`${supabase.url}/auth/v1/token?grant_type=password`, { headers, data: { email, password } })
-  ).json();
+  const data = { email, password, ...(await captchaFields(page)) };
+  const session = await (await request.post(`${supabase.url}/auth/v1/token?grant_type=password`, { headers, data })).json();
   const res = await request.delete(`${supabase.url}/rest/v1/destinations?id=eq.${id}`, {
     headers: { ...headers, Authorization: `Bearer ${session.access_token}`, Prefer: "return=representation" },
   });
@@ -118,6 +119,6 @@ test("admin: sign in, search, create, edit, preview, publish checks, archive, au
     await page.goto("/admin");
     await page.waitForURL(/\/admin\/login$/);
   } finally {
-    if (createdId) await deleteDestination(request, createdId);
+    if (createdId) await deleteDestination(page, request, createdId);
   }
 });

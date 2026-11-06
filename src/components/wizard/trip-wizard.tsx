@@ -18,6 +18,7 @@ import {
 import { buttonVariants } from "@/components/button-link";
 import { formatDate, formatInr } from "@/lib/format";
 import { createTrip, type CreateTripResult } from "@/lib/trips";
+import { useTurnstile } from "@/lib/turnstile";
 import {
   CheckCircle,
   ChevronLeft,
@@ -75,6 +76,7 @@ function Wizard() {
   const [returnToReview, setReturnToReview] = useState(false);
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
   const [submit, setSubmit] = useState<SubmitState>({ kind: "idle" });
+  const { containerRef: captchaRef, enabled: captchaEnabled, getToken: getCaptchaToken } = useTurnstile("create_trip", state.step === REVIEW_STEP);
 
   const headingRef = useRef<HTMLHeadingElement>(null);
   const stepBodyRef = useRef<HTMLDivElement>(null);
@@ -191,7 +193,7 @@ function Wizard() {
       mood_count: parsed.data.moods.length,
       flexible_date: parsed.data.dateFlexible,
     });
-    const result = await createTrip(parsed.data);
+    const result = await createTrip(parsed.data, captchaEnabled ? getCaptchaToken : undefined);
     if (result.ok) {
       router.push(`/trip/${result.tripId}`);
       return;
@@ -289,6 +291,10 @@ function Wizard() {
             <p className="text-sm text-muted" aria-live="polite">
               {countMoods(values, moodSlugs) === 0 ? "No moods selected" : `${countMoods(values, moodSlugs)} selected`}
             </p>
+          ) : null}
+          {isReview && captchaEnabled ? (
+            // Security check (Cloudflare Turnstile): invisible unless Cloudflare asks for a tick.
+            <div ref={captchaRef} className="flex justify-center [&:has(iframe[style*=visible])]:mb-3" />
           ) : null}
           <div className="flex gap-2.5">
             {step > 0 ? (
@@ -869,8 +875,10 @@ function SubmitFeedback({
   const message =
     r.kind === "network"
       ? "You seem to be offline, or the connection dropped. Your answers are kept. Try again when you're connected."
-      : r.kind === "auth"
-        ? "We couldn't start a guest session. Wait a moment and try again."
+      : r.kind === "captcha"
+        ? "We couldn't confirm this browser with a quick security check. If a check box appeared above the button, tick it, then try again."
+        : r.kind === "auth"
+          ? "We couldn't start a guest session. Wait a moment and try again."
         : r.kind === "api" && r.error.code === "RATE_LIMITED"
           ? "Too many searches in a short time. Wait a minute and try again."
           : "We couldn't reach the trip planner just now. Your answers are kept. Try again in a moment.";

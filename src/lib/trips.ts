@@ -16,26 +16,38 @@ export type ApiError = {
 export type CreateTripResult =
   | { ok: true; tripId: string }
   | { ok: false; kind: "api"; status: number; error: ApiError }
-  | { ok: false; kind: "network" | "auth" | "unavailable"; error?: ApiError };
+  | { ok: false; kind: "network" | "auth" | "captcha" | "unavailable"; error?: ApiError };
 
 /**
  * Ensures the visitor has a session, signing in anonymously on first submit (ARCHITECTURE §4).
- * TODO(captcha): pass `options.captchaToken` once CAPTCHA is enabled on the project.
+ * With Turnstile configured, the sign-in carries a CAPTCHA token (Supabase checks it); the check
+ * runs only when there is no session yet.
  */
-async function ensureSession(): Promise<boolean> {
+async function ensureSession(getCaptchaToken?: () => Promise<string | null>): Promise<"ok" | "auth" | "captcha"> {
   const supabase = getSupabaseBrowserClient();
   const { data } = await supabase.auth.getSession();
-  if (data.session) return true;
-  const { error } = await supabase.auth.signInAnonymously();
-  return !error;
+  if (data.session) return "ok";
+  let captchaToken: string | undefined;
+  if (getCaptchaToken) {
+    const token = await getCaptchaToken();
+    if (!token) return "captcha";
+    captchaToken = token;
+  }
+  const { error } = await supabase.auth.signInAnonymously(captchaToken ? { options: { captchaToken } } : undefined);
+  if (!error) return "ok";
+  return /captcha/i.test(error.message) ? "captcha" : "auth";
 }
 
 /** Calls the `create-trip` Edge Function. Never throws. */
-export async function createTrip(request: CreateTripRequest): Promise<CreateTripResult> {
+export async function createTrip(
+  request: CreateTripRequest,
+  getCaptchaToken?: () => Promise<string | null>,
+): Promise<CreateTripResult> {
   if (typeof navigator !== "undefined" && !navigator.onLine) return { ok: false, kind: "network" };
 
   try {
-    if (!(await ensureSession())) return { ok: false, kind: "auth" };
+    const session = await ensureSession(getCaptchaToken);
+    if (session !== "ok") return { ok: false, kind: session };
 
     const supabase = getSupabaseBrowserClient();
     const { data, error } = await supabase.functions.invoke<{ tripId: string }>("create-trip", {

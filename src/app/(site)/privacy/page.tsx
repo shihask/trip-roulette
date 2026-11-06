@@ -102,6 +102,11 @@ export default function PrivacyPage() {
           by our hosting provider. Destination photos may load from the photographer&apos;s or publisher&apos;s site. Directions
           open in Google Maps only when you choose to follow that link.
         </p>
+        <p>
+          When a guest session starts (your first search) or someone signs in to the admin, Cloudflare Turnstile runs a
+          short security check to tell people from automated sign-ups. Cloudflare receives technical details about your
+          browser and network for that check; it does not see your trip answers.
+        </p>
       </ContentSection>
 
       <ContentSection id="rights" title="Your choices">

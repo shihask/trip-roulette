@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV === "development";
+// Cloudflare Turnstile (CAPTCHA on sign-in, src/lib/turnstile.ts): its script and challenge iframe.
+const turnstileOrigin = "https://challenges.cloudflare.com";
 const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin : "";
 
 /**
@@ -14,7 +16,8 @@ const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.en
  */
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' ${turnstileOrigin}${isDev ? " 'unsafe-eval'" : ""}`,
+  `frame-src ${turnstileOrigin}`,
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob: ${supabaseOrigin}`.trim(),
   "font-src 'self'",

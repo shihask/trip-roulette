@@ -1,14 +1,18 @@
 import { expect, test } from "@playwright/test";
-import { supabase } from "./helpers";
+import { captchaBrowser, captchaFields, supabase } from "./helpers";
+
+test.use(captchaBrowser);
 
 /**
  * Spin service (BUILD_BRIEF §10): a repeated idempotency key and concurrent requests both return
  * the single stored result; clients can't write a winner. Creates one guest and one trip.
  * (Index mapping and uniformity are unit-tested with an injected RNG in tests/unit/spin.test.ts.)
  */
-test("spin is idempotent and one result per trip under concurrency", async ({ request }) => {
+test("spin is idempotent and one result per trip under concurrency", async ({ page, request }) => {
   const headers = { apikey: supabase.key, "Content-Type": "application/json" };
-  const signup = await (await request.post(`${supabase.url}/auth/v1/signup`, { headers, data: {} })).json();
+  const signup = await (
+    await request.post(`${supabase.url}/auth/v1/signup`, { headers, data: { ...(await captchaFields(page)) } })
+  ).json();
   const auth = { ...headers, Authorization: `Bearer ${signup.access_token}` };
 
   const [kochi] = await (await request.get(`${supabase.url}/rest/v1/locations?select=id&name=eq.Kochi`, { headers: auth })).json();
