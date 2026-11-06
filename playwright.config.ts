@@ -7,6 +7,9 @@ try {
   // CI provides the variables directly.
 }
 
+/** Set E2E_BASE_URL (e.g. the Vercel URL) to test a deployed site instead of a local build. */
+const remote = process.env.E2E_BASE_URL;
+
 /**
  * End-to-end tests (BUILD_BRIEF §10, TEST_PLAN). They run against the production build and the
  * linked Supabase project, so they create a small amount of real data per run (2 guests, 2 trips;
@@ -22,7 +25,7 @@ export default defineConfig({
   expect: { timeout: 15_000 },
   reporter: [["list"]],
   use: {
-    baseURL: "http://localhost:3100",
+    baseURL: remote ?? "http://localhost:3100",
     trace: "retain-on-failure",
   },
   projects: [
@@ -31,10 +34,12 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], viewport: { width: 390, height: 844 }, hasTouch: true },
     },
   ],
-  webServer: {
-    command: "npx next start -p 3100",
-    url: "http://localhost:3100",
-    reuseExistingServer: true,
-    timeout: 120_000,
-  },
+  webServer: remote
+    ? undefined
+    : {
+        command: "npx next start -p 3100",
+        url: "http://localhost:3100",
+        reuseExistingServer: true,
+        timeout: 120_000,
+      },
 });
