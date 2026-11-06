@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Plan — Travel mood</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Instrument+Sans:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1D6A4C}a:hover{color:#145239}
+a:focus-visible,button:focus-visible{outline:3px solid #1D6A4C;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F6F5F1; color: #18211D; font-family: 'Instrument Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+
+<header style="padding: 12px 16px 0; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; justify-content: space-between; height: 44px">
+<a href="Main.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #E1DFD7; background: #FFFFFF; display: flex; align-items: center; justify-content: center">
+<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4.5L7 10l5.5 5.5" fill="none" stroke="#18211D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</a>
+<p style="margin: 0; font-size: 14px; font-weight: 600; color: #55605A">Step 4 of 5</p>
+<a href="Main.dc.html" style="font-size: 15px; font-weight: 600; min-height: 44px; display: flex; align-items: center">Save &amp; exit</a>
+</div>
+<div role="progressbar" aria-label="Wizard progress" aria-valuemin="1" aria-valuemax="5" aria-valuenow="4" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px">
+<span style="height: 6px; border-radius: 3px; background: #1D6A4C"></span>
+<span style="height: 6px; border-radius: 3px; background: #1D6A4C"></span>
+<span style="height: 6px; border-radius: 3px; background: #1D6A4C"></span>
+<span style="height: 6px; border-radius: 3px; background: #1D6A4C"></span>
+<span style="height: 6px; border-radius: 3px; background: #DAD8CF"></span>
+</div>
+</header>
+
+<main style="flex-grow: 1; padding: 28px 16px 0; display: flex; flex-direction: column; gap: 8px">
+<h1 tabindex="-1" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 30px; letter-spacing: -0.01em">What's the mood?</h1>
+<p id="mood-help" style="margin: 0 0 16px; font-size: 16px; line-height: 1.45; color: #55605A">Pick at least one. Choose as many as you like.</p>
+
+<fieldset aria-describedby="mood-help" style="border: 0; margin: 0; padding: 0">
+<legend style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Travel mood</legend>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<sc-for list="{{moods}}" as="m" hint-placeholder-count="7">
+<button type="button" aria-pressed="{{m.pressed}}" onClick="{{m.toggle}}" style="{{m.style}}">
+<span style="display: flex; align-items: center; justify-content: space-between">
+<svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="{{m.icon}}" fill="none" stroke="{{m.iconColor}}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<sc-if value="{{m.selected}}" hint-placeholder-val="{{ false }}">
+<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#1D6A4C"></circle><path d="M6 10.2l2.6 2.6L14 7.4" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</sc-if>
+</span>
+<span style="font-size: 16px; font-weight: 600">{{m.label}}</span>
+</button>
+</sc-for>
+</div>
+</fieldset>
+
+<sc-if value="{{showError}}" hint-placeholder-val="{{ false }}">
+<p role="alert" style="margin: 12px 0 0; display: flex; gap: 8px; align-items: center; font-size: 15px; color: #A3261B; font-weight: 500">
+<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="7.5" fill="none" stroke="#A3261B" stroke-width="1.6"></circle><path d="M9 5.2v4.4M9 12.4v.1" stroke="#A3261B" stroke-width="1.8" stroke-linecap="round"></path></svg>
+Choose at least one mood to continue.</p>
+</sc-if>
+</main>
+
+<footer style="padding: 14px 16px 24px; border-top: 1px solid #E1DFD7; background: #FFFFFF; display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-size: 14px; color: #55605A">{{countLabel}}</p>
+<div style="display: flex; gap: 10px">
+<a href="Main.dc.html" style="flex: 0 0 104px; height: 52px; border-radius: 14px; border: 1.5px solid #C9C7BE; color: #18211D; text-decoration: none; font-weight: 600; font-size: 16px; display: flex; align-items: center; justify-content: center">Back</a>
+<sc-if value="{{canContinue}}" hint-placeholder-val="{{ true }}">
+<a href="Recommendations.dc.html" style="flex-grow: 1; height: 52px; border-radius: 14px; background: #1D6A4C; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 16px; display: flex; align-items: center; justify-content: center">Continue</a>
+</sc-if>
+<sc-if value="{{cannotContinue}}" hint-placeholder-val="{{ false }}">
+<button type="button" onClick="{{tryContinue}}" style="flex-grow: 1; height: 52px; border-radius: 14px; border: 0; background: #1D6A4C; color: #FFFFFF; font-family: inherit; font-weight: 600; font-size: 16px; cursor: pointer">Continue</button>
+</sc-if>
+</div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { picked: { nature: true, relaxation: true }, tried: false };
+}
+renderVals() {
+const defs = [
+{ id: 'nature', label: 'Nature', icon: 'M12 3l7 11H5zM12 14v7M8 21h8' },
+{ id: 'beach', label: 'Beach', icon: 'M3 18c2 0 2-1.5 4.5-1.5S9.5 18 12 18s2.5-1.5 4.5-1.5S19 18 21 18M7 13a5 5 0 0110 0M12 4v3' },
+{ id: 'adventure', label: 'Adventure', icon: 'M3 20l6-11 4 6 3-4 5 9z' },
+{ id: 'culture', label: 'Culture', icon: 'M4 20h16M6 20v-8M10 20v-8M14 20v-8M18 20v-8M3 12h18L12 4z' },
+{ id: 'relaxation', label: 'Relaxation', icon: 'M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z' },
+{ id: 'wildlife', label: 'Wildlife', icon: 'M5 9a2 2 0 104 0 2 2 0 00-4 0zM15 9a2 2 0 104 0 2 2 0 00-4 0zM8 4.5a1.5 1.5 0 103 0 1.5 1.5 0 00-3 0zM13 4.5a1.5 1.5 0 103 0 1.5 1.5 0 00-3 0zM12 13c-3 0-5 3-5 5.5 0 1.5 1.5 2 2.5 1.5S11 19 12 19s1.5.5 2.5 1 2.5 0 2.5-1.5C17 16 15 13 12 13z' },
+{ id: 'food', label: 'Food', icon: 'M7 3v8M5 3v5a2 2 0 004 0V3M7 11v10M17 21V3c-2 1-3.5 3-3.5 7h3.5' }
+];
+const picked = this.state.picked;
+const count = defs.filter(d => picked[d.id]).length;
+const moods = defs.map(d => {
+const on = !!picked[d.id];
+return {
+...d,
+selected: on,
+pressed: on ? 'true' : 'false',
+iconColor: on ? '#145239' : '#3E4742',
+style: 'min-height: 92px; padding: 14px; border-radius: 16px; text-align: left; font-family: inherit; color: #18211D; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; ' + (on ? 'background: #E4EFE8; border: 2px solid #1D6A4C' : 'background: #FFFFFF; border: 1.5px solid #D6D4CB'),
+toggle: () => this.setState({ picked: { ...picked, [d.id]: !on }, tried: false })
+};
+});
+return {
+moods,
+canContinue: count > 0,
+cannotContinue: count === 0,
+showError: count === 0 && this.state.tried,
+countLabel: count === 0 ? 'No moods selected' : count + ' selected',
+tryContinue: () => this.setState({ tried: true })
+};
+}
+}
+</script>
+</body>
+</html>
